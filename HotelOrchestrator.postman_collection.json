@@ -1,0 +1,79 @@
+{
+  "info": {
+    "name": "Hotel Offer Orchestrator System",
+    "schema": "https://getpostman.com"
+  },
+  "item": [
+    {
+      "name": "1. Aggregate Hotels - Delhi (With Overlaps & Deduplication)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/hotels?city=delhi",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "hotels"],
+          "query": [
+            { "key": "city", "value": "delhi" }
+          ]
+        },
+        "description": "Triggers the full Temporal orchestrator workflow in parallel across mock endpoints, deduplicates entries, saves to Redis, and returns optimal pricing configurations."
+      }
+    },
+    {
+      "name": "2. Filter Hotels - Price Range Window (In Redis)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/hotels?city=delhi&minPrice=5000&maxPrice=6000",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "hotels"],
+          "query": [
+            { "key": "city", "value": "delhi" },
+            { "key": "minPrice", "value": "5000" },
+            { "key": "maxPrice", "value": "6000" }
+          ]
+        },
+        "description": "Queries the active Redis Sorted Set state using price bounds as sorted score windows directly in the database."
+      }
+    },
+    {
+      "name": "3. Aggregate Hotels - City With No Results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/hotels?city=mumbai",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "hotels"],
+          "query": [
+            { "key": "city", "value": "mumbai" }
+          ]
+        },
+        "description": "Tests validation workflows when looking for non-existent geographical keys inside mock data sets."
+      }
+    },
+    {
+      "name": "4. Cluster Health Check (Suppliers & Cache Health)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["health"]
+        },
+        "description": "Performs system status mapping checks to report on external vendor up-time and downstream data caching availability."
+      }
+    }
+  ]
+}

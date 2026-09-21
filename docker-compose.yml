@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. Redis Cache Storage Layer
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # 2. Complete Local Temporal Orchestration Server
+  temporal:
+    image: temporalio/auto-setup:1.24.0
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      - DB=postgresql
+      - SKIP_DB_CREATE=false
+
+  # 3. Main Client Facing Express API & Supplier Mocks
+  api-server:
+    build: .
+    command: npm run start:server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - redis
+      - temporal
+
+  # 4. Background Temporal Worker Execution Thread Loop
+  temporal-worker:
+    build: .
+    command: npm run start:worker
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - api-server
